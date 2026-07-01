@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Northgate Institute of Technology — Production Schema
+// Prisma + SQLite (swap provider to postgresql for production deployment)
 
 generator client {
   provider = "prisma-client-js"
@@ -13,20 +10,320 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─────────────────────────────────────────────────────────────────────
+//  AUTHENTICATION & AUTHORIZATION
+// ─────────────────────────────────────────────────────────────────────
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  String       @id @default(cuid())
+  email               String       @unique
+  emailNormalized     String       @unique
+  name                String
+  passwordHash        String?
+  image               String?
+  phone               String?
+  role                String       @default("STUDENT") // ADMIN | EDITOR | STUDENT
+  status              String       @default("ACTIVE")  // ACTIVE | SUSPENDED | PENDING
+  emailVerifiedAt     DateTime?
+  lastLoginAt         DateTime?
+  lastLoginIp         String?
+  failedLoginAttempts Int          @default(0)
+  lockedUntil         DateTime?
+  twoFactorEnabled    Boolean      @default(false)
+  twoFactorSecret     String?
+  refreshTokens       RefreshToken[]
+  auditLogs           AuditLog[]
+  applications        Application[]
+  authoredNews        News[]
+  authoredEvents      Event[]
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  deletedAt           DateTime?
+
+  @@index([role])
+  @@index([status])
+  @@index([deletedAt])
 }
 
-model Post {
+model RefreshToken {
   id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  ip        String?
+  userAgent String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String   // LOGIN | LOGOUT | CREATE | UPDATE | DELETE | RESTORE | PUBLISH | etc.
+  resource  String   // User | Department | Programme | News | etc.
+  resourceId String?
+  metadata  String?  // JSON string
+  ip        String?
+  userAgent String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([resource, resourceId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────
+//  ACADEMIC CONTENT
+// ─────────────────────────────────────────────────────────────────────
+
+model Department {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  slug        String      @unique
+  tagline     String
+  description String?
+  icon        String?
+  imageUrl    String?
+  accentColor String?
+  sortOrder   Int         @default(0)
+  status      String      @default("PUBLISHED") // DRAFT | PUBLISHED | ARCHIVED
+  programmes  Programme[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  deletedAt   DateTime?
+
+  @@index([status])
+  @@index([sortOrder])
+  @@index([deletedAt])
+}
+
+model Programme {
+  id            String       @id @default(cuid())
+  code          String       @unique
+  title         String
+  slug          String       @unique
+  description   String
+  departmentId  String
+  department    Department   @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  qualification String       // Certificate | Diploma | Higher Diploma | Degree | Short Course
+  duration      String       // e.g. "3 years"
+  durationMonths Int
+  mode          String       @default("FULL_TIME") // FULL_TIME | PART_TIME | EVENING | ONLINE
+  fee           Int          @default(0)
+  currency      String       @default("KES")
+  intake        String       @default("September")
+  requirements  String?      // JSON string array
+  careerPaths   String?      // JSON string array
+  imageUrl      String?
+  status        String       @default("PUBLISHED") // DRAFT | PUBLISHED | ARCHIVED
+  featured      Boolean      @default(false)
+  sortOrder     Int          @default(0)
+  applications  Application[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  deletedAt     DateTime?
+
+  @@index([departmentId])
+  @@index([qualification])
+  @@index([status])
+  @@index([featured])
+  @@index([deletedAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────
+//  MARKETING CONTENT
+// ─────────────────────────────────────────────────────────────────────
+
+model News {
+  id           String   @id @default(cuid())
+  title        String
+  slug         String   @unique
+  excerpt      String
+  content      String
+  category     String   @default("Latest News") // Latest News | Research | Innovation | Conferences
+  imageUrl     String?
+  authorId     String?
+  author       User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  status       String   @default("DRAFT") // DRAFT | PUBLISHED | SCHEDULED | ARCHIVED
+  publishedAt  DateTime?
+  scheduledAt  DateTime?
+  readTime     Int      @default(3)
+  tags         String?  // JSON string array
+  views        Int      @default(0)
+  featured     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+
+  @@index([status, publishedAt])
+  @@index([category])
+  @@index([slug])
+  @@index([deletedAt])
+}
+
+model Event {
+  id           String    @id @default(cuid())
+  title        String
+  slug         String    @unique
+  description  String
+  category     String    @default("Upcoming Events") // Upcoming Events | Conferences
+  location     String?
+  imageUrl     String?
+  startDate    DateTime
+  endDate      DateTime?
+  authorId     String?
+  author       User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  status       String    @default("PUBLISHED") // DRAFT | PUBLISHED | ARCHIVED
+  capacity     Int?
+  registered   Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  @@index([status, startDate])
+  @@index([category])
+  @@index([deletedAt])
+}
+
+model Testimonial {
+  id         String   @id @default(cuid())
+  name       String
+  role       String
+  type       String   @default("student") // student | employer | graduate
+  quote      String
+  avatarUrl  String?
+  org        String?
+  rating     Int      @default(5)
+  status     String   @default("PUBLISHED") // DRAFT | PUBLISHED | ARCHIVED
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  deletedAt  DateTime?
+
+  @@index([status])
+  @@index([deletedAt])
+}
+
+model Partner {
+  id         String   @id @default(cuid())
+  name       String
+  short      String
+  logoUrl    String?
+  website    String?
+  category   String   @default("ACCREDITATION") // ACCREDITATION | INDUSTRY | GOVERNMENT
+  sortOrder  Int      @default(0)
+  status     String   @default("PUBLISHED")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  deletedAt  DateTime?
+
+  @@index([status])
+  @@index([deletedAt])
+}
+
+model GalleryImage {
+  id         String   @id @default(cuid())
+  title      String
+  alt        String
+  imageUrl   String
+  category   String   @default("Campus Life") // Workshop | Lab | Graduation | Campus Life | Sports
+  width      Int?
+  height     Int?
+  sortOrder  Int      @default(0)
+  status     String   @default("PUBLISHED")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  deletedAt  DateTime?
+
+  @@index([status])
+  @@index([category])
+  @@index([deletedAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────
+//  ADMISSIONS & ENGAGEMENT
+// ─────────────────────────────────────────────────────────────────────
+
+model Application {
+  id            String    @id @default(cuid())
+  reference     String    @unique
+  userId        String?
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  firstName     String
+  lastName      String
+  email         String
+  phone         String
+  programmeId   String
+  programme     Programme @relation(fields: [programmeId], references: [id], onDelete: Restrict)
+  intake        String
+  qualification String?
+  status        String    @default("PENDING") // PENDING | REVIEWING | ACCEPTED | REJECTED | ENROLLED
+  notes         String?
+  metadata      String?   // JSON string
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([status])
+  @@index([programmeId])
+  @@index([email])
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  status    String   @default("NEW") // NEW | READ | REPLIED | ARCHIVED
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  status    String   @default("ACTIVE") // ACTIVE | UNSUBSCRIBED | BOUNCED
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+model SiteSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
 }
