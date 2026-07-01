@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, AlertCircle, GraduationCap, BookOpen, FileText, Calendar, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DemoLoginButtons } from "@/components/DemoLoginButtons";
 
 const features: { icon: LucideIcon; label: string; desc: string }[] = [
   { icon: GraduationCap, label: "Grades & Transcripts", desc: "View results and download transcripts" },
@@ -176,18 +177,19 @@ export default function StudentLoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-border text-center">
-            <p className="text-sm text-muted-foreground">
-              Not a student yet?{" "}
-              <Link href="/apply" className="text-royal hover:underline font-semibold">Apply now</Link>
-            </p>
-          </div>
-
-          <div className="mt-4 rounded-xl bg-muted/60 p-4 text-xs text-muted-foreground">
-            <p className="font-semibold text-foreground mb-1">Demo Student Accounts:</p>
-            <p>student@northgate.ac.ke / Student@2026</p>
-            <p>mary.student@northgate.ac.ke / Student@2026</p>
-            <p>brian.student@northgate.ac.ke / Student@2026</p>
+          <div className="mt-6 pt-6 border-t border-border">
+            <div className="rounded-xl bg-muted/60 p-4">
+              <DemoLoginButtons
+                accounts={[
+                  { account: "student1", label: "Alex Mwangi", email: "student@northgate.ac.ke", role: "STUDENT", description: "Engineering · GPA 3.65", color: "bg-royal" },
+                  { account: "student2", label: "Mary Wanjiru", email: "mary.student@northgate.ac.ke", role: "STUDENT", description: "ICT · GPA 3.85", color: "bg-emerald-500" },
+                  { account: "student3", label: "Brian Otieno", email: "brian.student@northgate.ac.ke", role: "STUDENT", description: "Business · GPA 3.20", color: "bg-blue-500" },
+                  { account: "student4", label: "Grace Achieng", email: "grace.student@northgate.ac.ke", role: "STUDENT", description: "Nursing · GPA 3.95 ★", color: "bg-gold" },
+                  { account: "student5", label: "David Kiprop", email: "david.student@northgate.ac.ke", role: "STUDENT", description: "Agribusiness · GPA 2.10 ⚠", color: "bg-red-500" },
+                  { account: "student6", label: "Faith Njoroge", email: "faith.student@northgate.ac.ke", role: "STUDENT", description: "Culinary · Graduating", color: "bg-purple-500" },
+                ]}
+              />
+            </div>
           </div>
         </motion.div>
       </div>

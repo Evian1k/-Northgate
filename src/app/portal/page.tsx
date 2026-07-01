@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { DemoLoginButtons } from "@/components/DemoLoginButtons";
 
 const features: { icon: LucideIcon; label: string; desc: string }[] = [
   { icon: GraduationCap, label: "Grades & Transcripts", desc: "View results and download transcripts" },
@@ -149,16 +150,17 @@ export default function PortalPage() {
             </Button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-border text-center">
-            <p className="text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
-              <Link href="/apply" className="text-royal hover:underline font-semibold">Apply now</Link>
-            </p>
-          </div>
-
-          <div className="mt-4 rounded-xl bg-muted/60 p-3 text-xs text-muted-foreground">
-            <p className="font-semibold text-foreground mb-1">Demo access:</p>
-            <p>Use admin@northgate.ac.ke / Admin@2026</p>
+          <div className="mt-6 pt-6 border-t border-border">
+            <div className="rounded-xl bg-muted/60 p-4">
+              <DemoLoginButtons
+                accounts={[
+                  { account: "student1", label: "Alex Mwangi", email: "student@northgate.ac.ke", role: "STUDENT", description: "Engineering", color: "bg-royal" },
+                  { account: "student4", label: "Grace Achieng", email: "grace.student@northgate.ac.ke", role: "STUDENT", description: "Top performer", color: "bg-gold" },
+                  { account: "student5", label: "David Kiprop", email: "david.student@northgate.ac.ke", role: "STUDENT", description: "Struggling", color: "bg-red-500" },
+                  { account: "admin", label: "Admin", email: "admin@northgate.ac.ke", role: "ADMIN", description: "Staff", color: "gradient-royal" },
+                ]}
+              />
+            </div>
           </div>
         </motion.div>
       </div>

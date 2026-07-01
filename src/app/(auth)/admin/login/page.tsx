@@ -4,9 +4,10 @@ import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Shield, Loader2, AlertCircle } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DemoLoginButtons } from "@/components/DemoLoginButtons";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -149,12 +150,13 @@ export default function AdminLoginPage() {
           </form>
 
           <div className="mt-6 pt-6 border-t border-border">
-            <div className="rounded-xl bg-muted/60 p-4 text-xs text-muted-foreground">
-              <p className="flex items-center gap-1.5 font-semibold text-foreground mb-1">
-                <Shield className="h-3.5 w-3.5 text-gold" /> Demo Credentials
-              </p>
-              <p>Admin: <code className="font-mono">admin@northgate.ac.ke</code> / <code className="font-mono">Admin@2026</code></p>
-              <p>Editor: <code className="font-mono">editor@northgate.ac.ke</code> / <code className="font-mono">Editor@2026</code></p>
+            <div className="rounded-xl bg-muted/60 p-4">
+              <DemoLoginButtons
+                accounts={[
+                  { account: "admin", label: "Administrator", email: "admin@northgate.ac.ke", role: "ADMIN", description: "Full access", color: "gradient-royal" },
+                  { account: "editor", label: "Content Editor", email: "editor@northgate.ac.ke", role: "EDITOR", description: "Content only", color: "bg-emerald-500" },
+                ]}
+              />
             </div>
           </div>
         </div>
