@@ -5,6 +5,7 @@ export async function FeaturedDepartments() {
   const departments = await getPublishedDepartments();
   const mapped = departments.map((d) => ({
     id: d.id,
+    slug: d.slug,
     name: d.name,
     tagline: d.tagline,
     count: `${d._count.programmes} programmes`,

@@ -7,6 +7,7 @@ import { SectionHeading, StaggerGroup, staggerItem } from "@/components/anim";
 
 export interface Dept {
   id: string;
+  slug: string;
   name: string;
   tagline: string;
   count: string;
@@ -61,7 +62,7 @@ export function FeaturedDepartmentsClient({ departments }: { departments: Dept[]
 function DeptCard({ dept, large = false }: { dept: Dept; large?: boolean }) {
   return (
     <Link
-      href="#courses"
+      href={`/departments/${dept.slug}`}
       className="group relative block h-full w-full overflow-hidden rounded-2xl sm:rounded-3xl shadow-soft hover:shadow-premium transition-shadow"
     >
       <img

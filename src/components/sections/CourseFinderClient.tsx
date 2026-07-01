@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Search, MapPin, Award, Clock, ArrowRight, Sparkles } from "lucide-react";
 import { SectionHeading } from "@/components/anim";
@@ -13,6 +14,7 @@ import { Button } from "@/components/ui/button";
 interface Programme {
   code: string;
   title: string;
+  slug: string;
   dept: string;
   duration: string;
   level: string;
@@ -135,20 +137,24 @@ export function CourseFinderClient({ programmes, departments }: { programmes: Pr
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: i * 0.06 }}
-                  className="group rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 p-4 cursor-pointer transition-colors"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-gold">{r.code}</span>
-                      <p className="font-semibold text-white text-sm mt-1 leading-snug">{r.title}</p>
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/70">{r.dept}</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/70">{r.duration}</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/70">{r.level}</span>
+                  <Link
+                    href={`/programmes/${r.slug}`}
+                    className="group block rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 p-4 cursor-pointer transition-colors h-full"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-gold">{r.code}</span>
+                        <p className="font-semibold text-white text-sm mt-1 leading-snug">{r.title}</p>
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/70">{r.dept}</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/70">{r.duration}</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/70">{r.level}</span>
+                        </div>
                       </div>
+                      <ArrowRight className="h-4 w-4 text-white/40 group-hover:text-gold group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-1" />
                     </div>
-                    <ArrowRight className="h-4 w-4 text-white/40 group-hover:text-gold group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-1" />
-                  </div>
+                  </Link>
                 </motion.div>
               ))
             )}

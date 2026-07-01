@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import * as React from "react";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Calendar, Clock } from "lucide-react";
 import { SectionHeading, StaggerGroup, staggerItem } from "@/components/anim";
@@ -13,16 +14,23 @@ export interface NewsItem {
   date: string;
   readTime: string;
   img: string;
+  slug?: string;
   size: "lg" | "md";
 }
 
-const categories = ["Latest News", "Upcoming Events", "Research", "Innovation", "Conferences"];
+const categories = ["All", "Latest News", "Upcoming Events", "Research", "Innovation", "Conferences"];
 
 export function NewsEventsClient({ items }: { items: NewsItem[] }) {
+  const [activeCat, setActiveCat] = React.useState("All");
+
   if (items.length === 0) return null;
 
+  const filtered = activeCat === "All" ? items : items.filter((i) => i.category === activeCat);
+  const feature = activeCat === "All" ? filtered[0] : null;
+  const rest = feature ? filtered.slice(1) : filtered;
+
   return (
-    <section className="relative py-24 sm:py-28 px-4 sm:px-6 lg:px-8 bg-muted/40">
+    <section id="news" className="relative py-24 sm:py-28 px-4 sm:px-6 lg:px-8 bg-muted/40">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-12">
           <SectionHeading
@@ -33,11 +41,12 @@ export function NewsEventsClient({ items }: { items: NewsItem[] }) {
             subtitle="Discoveries, milestones and gatherings — the people and ideas powering our campus every week."
           />
           <div className="flex flex-wrap gap-2">
-            {categories.map((c, i) => (
+            {categories.map((c) => (
               <button
                 key={c}
+                onClick={() => setActiveCat(c)}
                 className={`text-xs font-medium px-3.5 py-1.5 rounded-full transition-colors ${
-                  i === 0
+                  c === activeCat
                     ? "gradient-royal text-white shadow-soft"
                     : "bg-card border border-border text-foreground/70 hover:text-foreground hover:border-royal/40"
                 }`}
@@ -48,22 +57,28 @@ export function NewsEventsClient({ items }: { items: NewsItem[] }) {
           </div>
         </div>
 
-        <StaggerGroup className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-          {items[0] && (
-            <motion.div variants={staggerItem} className="md:col-span-2 lg:row-span-2">
-              <ArticleCard item={items[0]} large />
-            </motion.div>
-          )}
-          {items.slice(1).map((it) => (
-            <motion.div key={it.id} variants={staggerItem}>
-              <ArticleCard item={it} />
-            </motion.div>
-          ))}
-        </StaggerGroup>
+        {filtered.length === 0 ? (
+          <div className="rounded-3xl bg-card border border-border p-12 text-center">
+            <p className="text-muted-foreground">No articles in the {activeCat} category yet.</p>
+          </div>
+        ) : (
+          <StaggerGroup className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            {feature && (
+              <motion.div key={feature.id} variants={staggerItem} className="md:col-span-2 lg:row-span-2">
+                <ArticleCard item={feature} large />
+              </motion.div>
+            )}
+            {rest.map((it) => (
+              <motion.div key={it.id} variants={staggerItem}>
+                <ArticleCard item={it} />
+              </motion.div>
+            ))}
+          </StaggerGroup>
+        )}
 
         <div className="mt-10 text-center">
           <Link
-            href="#"
+            href="#news"
             className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-semibold shadow-soft hover:shadow-premium hover:border-royal/40 transition-all"
           >
             View all news &amp; events <ArrowUpRight className="h-4 w-4 text-royal" />
@@ -75,9 +90,10 @@ export function NewsEventsClient({ items }: { items: NewsItem[] }) {
 }
 
 function ArticleCard({ item, large = false }: { item: NewsItem; large?: boolean }) {
+  const href = item.slug ? `/news/${item.slug}` : "#news";
   return (
     <Link
-      href="#"
+      href={href}
       className={`group relative block overflow-hidden rounded-3xl bg-card border border-border shadow-soft hover:shadow-premium transition-shadow h-full ${
         large ? "min-h-[420px]" : "min-h-[260px]"
       }`}

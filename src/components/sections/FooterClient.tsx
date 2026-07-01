@@ -10,15 +10,35 @@ import { useToast } from "@/hooks/use-toast";
 const columns = [
   {
     title: "Admissions",
-    links: ["How to Apply", "Tuition & Fees", "Scholarships", "International Students", "Transfer Students", "FAQs"],
+    links: [
+      { label: "How to Apply", href: "/apply" },
+      { label: "Tuition & Fees", href: "/fees" },
+      { label: "Download Prospectus", href: "/api/brochure" },
+      { label: "Student Portal", href: "/portal" },
+      { label: "Contact Admissions", href: "/contact-us" },
+    ],
   },
   {
     title: "Departments",
-    links: ["Engineering", "ICT", "Business", "Hospitality", "Health Sciences", "Agriculture"],
+    links: [
+      { label: "Engineering", href: "/departments/engineering" },
+      { label: "ICT", href: "/departments/ict" },
+      { label: "Business", href: "/departments/business" },
+      { label: "Hospitality", href: "/departments/hospitality" },
+      { label: "Health Sciences", href: "/departments/health-sciences" },
+      { label: "Agriculture", href: "/departments/agriculture" },
+    ],
   },
   {
     title: "Quick Links",
-    links: ["About Us", "News & Events", "Research", "Library", "Career Services", "Alumni"],
+    links: [
+      { label: "About Us", href: "/about" },
+      { label: "News & Events", href: "/#news" },
+      { label: "Course Finder", href: "/#courses" },
+      { label: "Photo Gallery", href: "/#gallery" },
+      { label: "Contact Us", href: "/contact-us" },
+      { label: "Admin Login", href: "/admin/login" },
+    ],
   },
 ];
 
@@ -66,7 +86,7 @@ export function FooterClient({ siteName, phone, email, address }: { siteName: st
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           <div className="lg:col-span-4">
-            <div className="flex items-center gap-3 mb-5">
+            <Link href="/" className="flex items-center gap-3 mb-5 w-fit">
               <div className="relative h-11 w-11 rounded-xl gradient-royal grid place-items-center shadow-soft">
                 <span className="font-display font-bold text-white text-lg">N</span>
                 <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full gradient-gold ring-2 ring-navy" />
@@ -77,7 +97,7 @@ export function FooterClient({ siteName, phone, email, address }: { siteName: st
                   Institute of Technology
                 </span>
               </div>
-            </div>
+            </Link>
             <p className="text-sm text-white/65 leading-relaxed max-w-sm">
               East Africa&apos;s premier TVET institution — building tomorrow&apos;s skilled professionals
               through world-class technical education since 1964.
@@ -120,9 +140,9 @@ export function FooterClient({ siteName, phone, email, address }: { siteName: st
                 </p>
                 <ul className="space-y-2.5">
                   {col.links.map((l) => (
-                    <li key={l}>
-                      <Link href="#" className="group inline-flex items-center gap-1 text-sm text-white/65 hover:text-white transition-colors">
-                        {l}
+                    <li key={l.label}>
+                      <Link href={l.href} className="group inline-flex items-center gap-1 text-sm text-white/65 hover:text-white transition-colors">
+                        {l.label}
                         <ArrowUpRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </Link>
                     </li>
@@ -170,9 +190,9 @@ export function FooterClient({ siteName, phone, email, address }: { siteName: st
           </div>
           <p className="text-xs text-white/40 text-center sm:text-right">
             © {new Date().getFullYear()} {siteName}. All rights reserved. ·
-            <Link href="#" className="hover:text-white transition-colors ml-1">Privacy</Link> ·
-            <Link href="#" className="hover:text-white transition-colors ml-1">Terms</Link> ·
-            <Link href="#" className="hover:text-white transition-colors ml-1">Accessibility</Link>
+            <Link href="/contact-us" className="hover:text-white transition-colors ml-1">Privacy</Link> ·
+            <Link href="/contact-us" className="hover:text-white transition-colors ml-1">Terms</Link> ·
+            <Link href="/contact-us" className="hover:text-white transition-colors ml-1">Accessibility</Link>
           </p>
         </div>
       </div>

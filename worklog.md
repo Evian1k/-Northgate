@@ -1,45 +1,44 @@
 # Northgate Institute of Technology — Production-Ready TVET Platform
 
 ---
-Task ID: production-build
+Task ID: fix-all-interactions
 Agent: main
-Task: Convert TVET homepage into a complete production-ready platform with database, auth, admin CMS, APIs, security
+Task: Make every interaction on the homepage functional — fix broken AnimatedCounter, build detail pages, wire up all CTAs
 
 Work Log:
-- Designed 13-model Prisma schema (User, RefreshToken, PasswordReset, EmailVerification, AuditLog, Department, Programme, News, Event, Testimonial, Partner, GalleryImage, Application, ContactMessage, NewsletterSubscriber, SiteSetting) with relations, FKs, cascades, soft deletes, indexes
-- Ran `db:push` and seeded admin/editor users + 9 departments + 12 programmes + 4 testimonials + 6 partners + 9 gallery images + 5 news + 3 events + 11 site settings
-- Built auth library: bcryptjs hashing (cost 12), JWT access (15m) + refresh (30d) tokens via jose, httpOnly cookies, session refresh, role gating
-- Built 8 auth API routes: login, register, logout, refresh, forgot-password, reset-password, verify-email, me
-- Built API utilities: apiHandler wrapper (error catching, auth, audit), Zod validators, in-memory rate limiter, audit logger
-- Built 22 resource API routes for full CRUD on departments, programmes, news, events, testimonials, partners, gallery, applications, contact, newsletter, audit-logs, stats
-- Refactored homepage sections to fetch real data via server components with React cache() and Suspense skeletons (Hero, FeaturedDepartments, CourseFinder, SuccessStories, NewsEvents, PhotoGallery, Partners, FinalCTA, Footer)
-- Built Next.js middleware protecting /admin/* routes with JWT verification + refresh attempt + redirect to /admin/login
-- Built Liquid Glass admin login page with floating orbs, glassmorphism, show/hide password, demo credentials
-- Built AdminShell with sidebar nav (4 groups, 14 items), topbar (search, theme toggle, notifications, user menu), mobile drawer
-- Built admin dashboard with 12 live stat cards, 14-day applications trend bar chart, recent activity feed, recent applications/messages lists
-- Built reusable ResourceTable component with search, multi-filter, bulk select+delete, CSV export, per-row action menu, beautiful empty states, status pills
-- Built 9 admin CRUD list pages: departments, programmes, news, events, testimonials, partners, gallery, applications, messages, subscribers, audit-logs (all fetching real DB data)
-- Built public /apply page: 7-field application form, live programme dropdown, writes to DB, returns reference number, success screen
-- Refactored to fix server→client serialization (column renderers moved to client AdminList component)
-- Added dark mode toggle that works across admin + homepage
-- Added rate limiting on login (10/min), register (5/min), forgot-password (5/min), apply (5/min), contact (5/min), newsletter (5/min)
-- Added audit logging on every CREATE/UPDATE/DELETE action
+- Fixed AnimatedCounter bug: replaced useSpring (which wasn't firing onChange in scroll-triggered contexts) with framer-motion's `animate()` function for reliable count-up animation. Success Stories now shows 96% / 18,500+ / 80+ / 42% instead of 0% / 0+ / 0+ / 0%.
+- Built /programmes/[slug] detail page: hero with code/department/qualification/duration badges, 4 quick-fact cards, full description, entry requirements (checklist), career paths (chips), sticky apply sidebar, related programmes grid
+- Built /news/[slug] article detail page: hero with author/date/read-time/views, article body, tags, CTA, related stories grid. Auto-increments view count.
+- Built /departments/[slug] detail page: hero with department icon and tagline, about section, 3 stat cards (programmes/faculty/placed), full programme list with fee/duration/qualification
+- Made Course Finder result cards clickable → /programmes/[slug]
+- Made Featured Department cards clickable → /departments/[slug]
+- Made News article cards clickable → /news/[slug]
+- Made News category chips functional (All, Latest News, Upcoming Events, Research, Innovation, Conferences) — client-side filter with feature card reflow
+- Built CampusTourModal: 6-stop virtual tour with video player area, location/duration badges, thumbnail navigation, prev/next controls, keyboard ESC to close. Wired to both Hero "Watch Campus Tour" button and QuickActions "Virtual Tour" card.
+- Built /api/brochure PDF generator: returns full HTML prospectus (cover, stats, principal's welcome, admissions info, all programmes by department with fees, contact section) that auto-opens browser print dialog. Wired to "Download Brochure" (QuickActions) and "Download Prospectus" (FinalCTA).
+- Built /portal Student Portal login page: split-screen with feature cards (Grades, E-Learning, Fees, Timetable) on left, login form on right. Posts to /api/auth/login, redirects to /admin on success.
+- Built /fees Fee Structure page: hero, 4 payment method cards (Card/Bank/M-Pesa/Installment), searchable+filterable fees table for all programmes, FAQ accordion, contact CTA. Links to /api/brochure for prospectus download.
+- Built /about page: hero with 4 stat cards, mission section (3 cards: Pedagogy/Partnerships/Recognition), interactive timeline of 6 milestones (1964-2026), CTA. Fixed server component error (removed motion.div, used Reveal wrapper).
+- Built /contact-us page: 4 contact method cards, working contact form (name/email/phone/subject/message) that posts to /api/contact, success state with checkmark, embedded OpenStreetMap.
+- Updated Navigation: all 5 nav items (About, Academics, Admissions, Campus Life, News) now point to real routes. Logo links to "/". Portal button → /portal. Apply Now → /apply. Mega menu links updated to real pages. Mobile drawer links updated.
+- Updated Footer: all 3 columns (Admissions, Departments, Quick Links) now link to real pages. Privacy/Terms/Accessibility → /contact-us. Brand logo clickable → "/".
+- Updated HeroClient: Apply Now → /apply, Watch Campus Tour opens CampusTourModal
+- Updated FinalCTAClient: Apply Now → /apply, Download Prospectus → /api/brochure (opens in new tab)
+- Updated QuickActions: all 6 cards now functional (Apply Online → /apply, Download Brochure → /api/brochure, Fee Structure → /fees, Student Portal → /portal, Virtual Tour → modal, Course Finder → /#courses)
 
 Stage Summary:
-- Lint: clean (no errors/warnings)
-- Dev server: all routes returning 200, no runtime errors
+- Lint: clean
 - Agent Browser verified end-to-end:
-  • Homepage renders with real DB data (9 departments, 12 programmes, 4 testimonials, etc.)
-  • Admin /admin redirects to /admin/login when unauthenticated
-  • Login with admin@northgate.ac.ke / Admin@2026 succeeds, redirects to /admin dashboard
-  • Dashboard shows live counts, trend chart, recent activity, recent applications
-  • Departments list page renders 9 rows with proper columns, status pills, action menus
-  • Programmes list renders 12 rows with filters (Level, Status)
-  • Applications list shows beautiful empty state
-  • Public /apply form: fills, submits, returns reference number NG-2026-XXXXX
-  • Submitted application appears in admin dashboard Applications count + Recent Applications list
-  • Newsletter subscription from homepage footer persists to DB (verified via Prisma query)
-  • Dark mode works on both homepage and admin
-  • Mobile responsive (iPhone 14): admin sidebar collapses to hamburger, stat cards stack 2-per-row
-- Deliverable: complete production-ready TVET platform with database, auth, RBAC, admin CMS, REST APIs, security, audit logging
-- All third-party integrations (Google Maps, OAuth, SMTP, payments, AI) are stubbed and ready for credentials
+  • AnimatedCounter in Success Stories now shows real values (96%, 18500+, 80+, 42%)
+  • Programme detail page renders with full info + related programmes
+  • News article page renders with content body + related stories
+  • Department detail page renders with programme list
+  • Campus Tour modal opens with 6 tour stops + navigation
+  • Brochure generator (/api/brochure) produces full PDF prospectus with all programmes
+  • Contact form submits → success state → message persisted to DB (verified)
+  • News category filter works (Research button shows only Research articles)
+  • Portal page renders with login form + feature cards
+  • Fees page renders with payment methods + searchable fees table + FAQ
+  • About page renders with stats + mission + timeline (after motion.div fix)
+- Every link, button, and CTA on the homepage now does something real
+- All public-facing flows tested: homepage → programme detail → apply, homepage → news article, homepage → contact form → DB, homepage → brochure PDF, homepage → campus tour modal, homepage → fees table, homepage → portal login

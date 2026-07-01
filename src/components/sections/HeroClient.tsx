@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Play, ArrowRight, Compass, ChevronDown } from "lucide-react";
+import { CampusTourModal } from "@/components/CampusTourModal";
 
 interface HeroStat {
   value: number;
@@ -21,7 +22,10 @@ export function HeroClient({
   admissionsIntake: string;
   admissionsDeadline: string;
 }) {
+  const [tourOpen, setTourOpen] = React.useState(false);
+
   return (
+    <>
     <section className="relative min-h-[100svh] w-full overflow-hidden gradient-hero">
       {/* Background image with overlay */}
       <div className="absolute inset-0">
@@ -102,7 +106,10 @@ export function HeroClient({
               <Compass className="h-4 w-4" />
               Explore Courses
             </Link>
-            <button className="group inline-flex items-center gap-2 rounded-full text-white px-4 py-3.5 font-semibold hover:bg-white/10 transition-all">
+            <button
+              onClick={() => setTourOpen(true)}
+              className="group inline-flex items-center gap-2 rounded-full text-white px-4 py-3.5 font-semibold hover:bg-white/10 transition-all"
+            >
               <span className="grid place-items-center h-9 w-9 rounded-full gradient-gold text-navy group-hover:scale-110 transition-transform">
                 <Play className="h-4 w-4 fill-navy" />
               </span>
@@ -148,5 +155,7 @@ export function HeroClient({
         <ChevronDown className="h-3.5 w-3.5 text-white/40 -mt-1" />
       </motion.div>
     </section>
+    <CampusTourModal open={tourOpen} onClose={() => setTourOpen(false)} />
+    </>
   );
 }

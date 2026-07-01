@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion, useInView, useMotionValue, useSpring, type Variants } from "framer-motion";
+import { motion, useInView, animate, type Variants } from "framer-motion";
 
 /* ------------------------------------------------------------------ */
 /*  Reveal – fade / slide-up on scroll into view                       */
@@ -90,27 +90,26 @@ export function AnimatedCounter({
   decimals?: number;
 }) {
   const ref = React.useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, amount: 0.4 });
-  const mv = useMotionValue(0);
-  const spring = useSpring(mv, { duration: duration * 1000, bounce: 0 });
+  const inView = useInView(ref, { once: true, amount: 0.3 });
 
   React.useEffect(() => {
-    if (inView) mv.set(to);
-  }, [inView, to, mv]);
-
-  React.useEffect(() => {
-    return spring.on("change", (v) => {
-      if (ref.current) {
-        ref.current.textContent =
+    if (!inView || !ref.current) return;
+    const node = ref.current;
+    const controls = animate(0, to, {
+      duration,
+      ease: [0.22, 1, 0.36, 1],
+      onUpdate(value) {
+        node.textContent =
           prefix +
-          v.toLocaleString("en-US", {
+          value.toLocaleString("en-US", {
             minimumFractionDigits: decimals,
             maximumFractionDigits: decimals,
           }) +
           suffix;
-      }
+      },
     });
-  }, [spring, prefix, suffix, decimals]);
+    return () => controls.stop();
+  }, [inView, to, duration, prefix, suffix, decimals]);
 
   return (
     <span ref={ref}>

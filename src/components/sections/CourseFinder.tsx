@@ -10,6 +10,7 @@ export async function CourseFinder() {
   const mapped = programmes.map((p) => ({
     code: p.code,
     title: p.title,
+    slug: p.slug,
     dept: p.department.name,
     duration: p.duration,
     level: p.qualification,

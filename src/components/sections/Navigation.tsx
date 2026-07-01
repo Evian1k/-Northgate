@@ -46,28 +46,28 @@ const megaMenu: MegaColumn[] = [
   {
     title: "About",
     links: [
-      { label: "Overview", href: "#", desc: "Our mission & vision" },
-      { label: "Leadership", href: "#", desc: "Governance & management" },
-      { label: "Campus & Facilities", href: "#", desc: "Modern labs & workshops" },
-      { label: "Quality Assurance", href: "#", desc: "Accreditation & standards" },
+      { label: "Overview", href: "/about", desc: "Our mission & vision" },
+      { label: "Leadership", href: "/about", desc: "Governance & management" },
+      { label: "Campus & Facilities", href: "/#gallery", desc: "Modern labs & workshops" },
+      { label: "Contact Us", href: "/contact-us", desc: "Get in touch" },
     ],
   },
   {
     title: "Academics",
     links: [
-      { label: "Schools & Departments", href: "#departments", desc: "9 academic faculties" },
-      { label: "Course Catalogue", href: "#courses", desc: "150+ programmes" },
-      { label: "Academic Calendar", href: "#", desc: "Term dates & schedules" },
-      { label: "Research & Innovation", href: "#", desc: "Centres of excellence" },
+      { label: "Schools & Departments", href: "/#departments", desc: "9 academic faculties" },
+      { label: "Course Catalogue", href: "/#courses", desc: "150+ programmes" },
+      { label: "News & Events", href: "/#news", desc: "Latest updates" },
+      { label: "Photo Gallery", href: "/#gallery", desc: "Campus life" },
     ],
   },
   {
     title: "Admissions",
     links: [
-      { label: "How to Apply", href: "#", desc: "Step-by-step guide" },
-      { label: "Tuition & Fees", href: "#", desc: "Fee structure & funding" },
-      { label: "Scholarships", href: "#", desc: "Merit & need-based aid" },
-      { label: "International Students", href: "#", desc: "Study in Kenya" },
+      { label: "How to Apply", href: "/apply", desc: "Online application form" },
+      { label: "Tuition & Fees", href: "/fees", desc: "Fee structure & funding" },
+      { label: "Download Prospectus", href: "/api/brochure", desc: "2026 PDF brochure" },
+      { label: "Student Portal", href: "/portal", desc: "Login to your account" },
     ],
   },
 ];
@@ -86,7 +86,13 @@ export function Navigation() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const navItems = ["About", "Academics", "Admissions", "Campus Life", "News"];
+  const navItems: { label: string; href: string; hasMega?: boolean }[] = [
+    { label: "About", href: "/about", hasMega: true },
+    { label: "Academics", href: "/#departments", hasMega: true },
+    { label: "Admissions", href: "/apply", hasMega: true },
+    { label: "Campus Life", href: "/#gallery", hasMega: false },
+    { label: "News", href: "/#news", hasMega: false },
+  ];
 
   return (
     <>
@@ -102,7 +108,7 @@ export function Navigation() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className={`flex items-center justify-between transition-all duration-300 ${scrolled ? "h-16" : "h-20"}`}>
             {/* Logo */}
-            <Link href="#" className="flex items-center gap-3 group">
+            <Link href="/" className="flex items-center gap-3 group">
               <div className="relative h-10 w-10 rounded-xl gradient-royal grid place-items-center shadow-soft group-hover:scale-105 transition-transform">
                 <span className="font-display font-bold text-white text-lg">N</span>
                 <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full gradient-gold ring-2 ring-background" />
@@ -120,20 +126,21 @@ export function Navigation() {
             {/* Desktop nav */}
             <nav className="hidden lg:flex items-center gap-1">
               {navItems.map((item) => (
-                <button
-                  key={item}
-                  onMouseEnter={() => setMegaOpen(megaMenu.some(m => m.title === item) ? item : null)}
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onMouseEnter={() => setMegaOpen(item.hasMega && megaMenu.some(m => m.title === item.label) ? item.label : null)}
                   className={`relative px-4 py-2 text-sm font-medium rounded-full transition-colors flex items-center gap-1 ${
                     scrolled
                       ? "text-foreground/80 hover:text-foreground hover:bg-muted"
                       : "text-white/80 hover:text-white hover:bg-white/10"
                   }`}
                 >
-                  {item}
-                  {megaMenu.some(m => m.title === item) && (
+                  {item.label}
+                  {item.hasMega && megaMenu.some(m => m.title === item.label) && (
                     <ChevronDown className="h-3.5 w-3.5 opacity-60" />
                   )}
-                </button>
+                </Link>
               ))}
             </nav>
 
@@ -158,7 +165,7 @@ export function Navigation() {
                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
               <Link
-                href="#"
+                href="/portal"
                 className={`hidden md:inline-flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-full transition-colors ${
                   scrolled ? "text-foreground/80 hover:bg-muted" : "text-white/80 hover:bg-white/10"
                 }`}
@@ -171,7 +178,7 @@ export function Navigation() {
                 size="sm"
                 className="hidden md:inline-flex gradient-royal text-white border-0 shadow-soft hover:shadow-premium rounded-full font-semibold"
               >
-                <Link href="#final-cta">Apply Now</Link>
+                <Link href="/apply">Apply Now</Link>
               </Button>
               <button
                 onClick={() => setMobileOpen(true)}
@@ -228,7 +235,7 @@ export function Navigation() {
                       {departments.slice(0, 6).map((d) => (
                         <Link
                           key={d.label}
-                          href="#departments"
+                          href={`/departments/${d.label.toLowerCase().replace(/\s+/g, "-")}`}
                           className="flex items-center gap-1.5 text-xs text-foreground/70 hover:text-royal transition-colors py-1"
                         >
                           <d.icon className="h-3.5 w-3.5" />
@@ -274,21 +281,21 @@ export function Navigation() {
               <div className="p-5 space-y-1">
                 {navItems.map((item) => (
                   <Link
-                    key={item}
-                    href="#"
+                    key={item.label}
+                    href={item.href}
                     onClick={() => setMobileOpen(false)}
                     className="block px-4 py-3 rounded-2xl text-foreground/80 hover:bg-muted font-medium"
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 ))}
               </div>
               <div className="p-5 border-t border-border space-y-3">
-                <Link href="#" className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-muted text-foreground font-medium">
+                <Link href="/portal" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-muted text-foreground font-medium">
                   <User className="h-4 w-4" /> Student Portal
                 </Link>
                 <Button asChild className="w-full gradient-royal text-white rounded-full font-semibold">
-                  <Link href="#final-cta">Apply Now</Link>
+                  <Link href="/apply" onClick={() => setMobileOpen(false)}>Apply Now</Link>
                 </Button>
                 <button
                   onClick={toggleTheme}

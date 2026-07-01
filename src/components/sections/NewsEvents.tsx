@@ -13,6 +13,7 @@ export async function NewsEvents() {
   const items = [
     ...(news[0] ? [{
       id: news[0].id,
+      slug: news[0].slug,
       category: news[0].category,
       title: news[0].title,
       excerpt: news[0].excerpt,
@@ -23,6 +24,7 @@ export async function NewsEvents() {
     }] : []),
     ...events.slice(0, 2).map(e => ({
       id: e.id,
+      slug: undefined,
       category: e.category,
       title: e.title,
       excerpt: e.description,
@@ -33,6 +35,7 @@ export async function NewsEvents() {
     })),
     ...news.slice(1, 4).map(n => ({
       id: n.id,
+      slug: n.slug,
       category: n.category,
       title: n.title,
       excerpt: n.excerpt,

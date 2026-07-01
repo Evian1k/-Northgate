@@ -52,13 +52,15 @@ export function FinalCTAClient({
               Apply Now
               <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
-            <Link
-              href="#"
+            <a
+              href="/api/brochure"
+              target="_blank"
+              rel="noopener noreferrer"
               className="group inline-flex items-center gap-2 rounded-full glass-dark text-white px-7 py-4 font-semibold hover:bg-white/10 transition-all"
             >
               <Download className="h-4 w-4" />
               Download Prospectus
-            </Link>
+            </a>
           </div>
         </Reveal>
 
