@@ -1,15 +1,12 @@
 "use client";
 
 import * as React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import {
-  UserCircle, Lock, Mail, ArrowRight, Loader2, AlertCircle,
-  GraduationCap, BookOpen, FileText, Calendar, type LucideIcon,
-} from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, AlertCircle, GraduationCap, BookOpen, FileText, Calendar, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
 
 const features: { icon: LucideIcon; label: string; desc: string }[] = [
   { icon: GraduationCap, label: "Grades & Transcripts", desc: "View results and download transcripts" },
@@ -18,14 +15,21 @@ const features: { icon: LucideIcon; label: string; desc: string }[] = [
   { icon: Calendar, label: "Timetable", desc: "Check your class schedule and exams" },
 ];
 
-export default function PortalPage() {
-  const { toast } = useToast();
+export default function StudentLoginPage() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const redirect = params.get("redirect") || "/student/dashboard";
+  const forbidden = params.get("error") === "forbidden";
+
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [showPwd, setShowPwd] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(forbidden ? "You don't have permission to access that page." : null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setLoading(true);
     try {
       const res = await fetch("/api/auth/login", {
@@ -34,14 +38,14 @@ export default function PortalPage() {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      if (res.ok) {
-        toast({ title: "Welcome back!", description: "Redirecting to your dashboard…" });
-        setTimeout(() => window.location.href = "/student/dashboard", 1000);
-      } else {
-        toast({ title: "Login failed", description: data.error || "Invalid credentials", variant: "destructive" });
+      if (!res.ok) {
+        setError(data.error || "Login failed");
+        return;
       }
+      router.push(redirect);
+      router.refresh();
     } catch {
-      toast({ title: "Network error", description: "Please try again", variant: "destructive" });
+      setError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -65,10 +69,10 @@ export default function PortalPage() {
             Student Portal
           </span>
           <h1 className="font-display font-bold text-4xl sm:text-5xl tracking-tight leading-[1.1]">
-            Your Northgate,<br /><span className="text-gradient-gold">all in one place.</span>
+            Your academic life,<br /><span className="text-gradient-gold">all in one place.</span>
           </h1>
           <p className="mt-4 text-white/70 max-w-md">
-            Access your grades, course materials, fee statements, and timetable — anywhere, anytime.
+            Grades, attendance, fees, library, hostel — everything you need, beautifully organized.
           </p>
           <div className="mt-8 grid grid-cols-2 gap-3">
             {features.map((f) => (
@@ -90,13 +94,24 @@ export default function PortalPage() {
         >
           <div className="flex items-center gap-3 mb-6">
             <div className="relative h-12 w-12 rounded-2xl gradient-royal grid place-items-center shadow-premium">
-              <UserCircle className="h-6 w-6 text-white" />
+              <GraduationCap className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h2 className="font-display font-bold text-xl">Sign In</h2>
-              <p className="text-xs text-muted-foreground">Access your student account</p>
+              <h2 className="font-display font-bold text-xl">Student Sign In</h2>
+              <p className="text-xs text-muted-foreground">Access your dashboard</p>
             </div>
           </div>
+
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-5 flex items-start gap-2 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 px-4 py-3 text-sm text-red-700 dark:text-red-300"
+            >
+              <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </motion.div>
+          )}
 
           <form onSubmit={submit} className="space-y-4">
             <div>
@@ -110,7 +125,7 @@ export default function PortalPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@northgate.ac.ke"
+                  placeholder="student@northgate.ac.ke"
                   className="pl-10 h-12 rounded-xl bg-background/60"
                 />
               </div>
@@ -123,13 +138,21 @@ export default function PortalPage() {
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  type="password"
+                  type={showPwd ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="pl-10 h-12 rounded-xl bg-background/60"
+                  className="pl-10 pr-10 h-12 rounded-xl bg-background/60"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPwd((p) => !p)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label={showPwd ? "Hide password" : "Show password"}
+                >
+                  {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
 
@@ -143,22 +166,28 @@ export default function PortalPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-12 rounded-xl gradient-royal text-white font-semibold shadow-premium hover:shadow-gold transition-shadow"
+              className="w-full h-12 rounded-xl gradient-royal text-white font-semibold shadow-premium hover:shadow-gold transition-shadow disabled:opacity-60"
             >
-              {loading ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Signing in…</> : <>Sign In <ArrowRight className="h-4 w-4 ml-2" /></>}
+              {loading ? (
+                <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Signing in…</>
+              ) : (
+                <>Sign In <ArrowRight className="h-4 w-4 ml-2" /></>
+              )}
             </Button>
           </form>
 
           <div className="mt-6 pt-6 border-t border-border text-center">
             <p className="text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
+              Not a student yet?{" "}
               <Link href="/apply" className="text-royal hover:underline font-semibold">Apply now</Link>
             </p>
           </div>
 
-          <div className="mt-4 rounded-xl bg-muted/60 p-3 text-xs text-muted-foreground">
-            <p className="font-semibold text-foreground mb-1">Demo access:</p>
-            <p>Use admin@northgate.ac.ke / Admin@2026</p>
+          <div className="mt-4 rounded-xl bg-muted/60 p-4 text-xs text-muted-foreground">
+            <p className="font-semibold text-foreground mb-1">Demo Student Accounts:</p>
+            <p>student@northgate.ac.ke / Student@2026</p>
+            <p>mary.student@northgate.ac.ke / Student@2026</p>
+            <p>brian.student@northgate.ac.ke / Student@2026</p>
           </div>
         </motion.div>
       </div>

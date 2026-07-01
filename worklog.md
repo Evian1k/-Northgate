@@ -1,44 +1,66 @@
-# Northgate Institute of Technology — Production-Ready TVET Platform
+# Northgate Institute of Technology — Student Portal & Dashboard
 
 ---
-Task ID: fix-all-interactions
+Task ID: student-portal
 Agent: main
-Task: Make every interaction on the homepage functional — fix broken AnimatedCounter, build detail pages, wire up all CTAs
+Task: Build complete student information system with Apple Liquid Glass design, demo accounts, 5-click logo shortcut, all 22 portal pages
 
 Work Log:
-- Fixed AnimatedCounter bug: replaced useSpring (which wasn't firing onChange in scroll-triggered contexts) with framer-motion's `animate()` function for reliable count-up animation. Success Stories now shows 96% / 18,500+ / 80+ / 42% instead of 0% / 0+ / 0+ / 0%.
-- Built /programmes/[slug] detail page: hero with code/department/qualification/duration badges, 4 quick-fact cards, full description, entry requirements (checklist), career paths (chips), sticky apply sidebar, related programmes grid
-- Built /news/[slug] article detail page: hero with author/date/read-time/views, article body, tags, CTA, related stories grid. Auto-increments view count.
-- Built /departments/[slug] detail page: hero with department icon and tagline, about section, 3 stat cards (programmes/faculty/placed), full programme list with fee/duration/qualification
-- Made Course Finder result cards clickable → /programmes/[slug]
-- Made Featured Department cards clickable → /departments/[slug]
-- Made News article cards clickable → /news/[slug]
-- Made News category chips functional (All, Latest News, Upcoming Events, Research, Innovation, Conferences) — client-side filter with feature card reflow
-- Built CampusTourModal: 6-stop virtual tour with video player area, location/duration badges, thumbnail navigation, prev/next controls, keyboard ESC to close. Wired to both Hero "Watch Campus Tour" button and QuickActions "Virtual Tour" card.
-- Built /api/brochure PDF generator: returns full HTML prospectus (cover, stats, principal's welcome, admissions info, all programmes by department with fees, contact section) that auto-opens browser print dialog. Wired to "Download Brochure" (QuickActions) and "Download Prospectus" (FinalCTA).
-- Built /portal Student Portal login page: split-screen with feature cards (Grades, E-Learning, Fees, Timetable) on left, login form on right. Posts to /api/auth/login, redirects to /admin on success.
-- Built /fees Fee Structure page: hero, 4 payment method cards (Card/Bank/M-Pesa/Installment), searchable+filterable fees table for all programmes, FAQ accordion, contact CTA. Links to /api/brochure for prospectus download.
-- Built /about page: hero with 4 stat cards, mission section (3 cards: Pedagogy/Partnerships/Recognition), interactive timeline of 6 milestones (1964-2026), CTA. Fixed server component error (removed motion.div, used Reveal wrapper).
-- Built /contact-us page: 4 contact method cards, working contact form (name/email/phone/subject/message) that posts to /api/contact, success state with checkmark, embedded OpenStreetMap.
-- Updated Navigation: all 5 nav items (About, Academics, Admissions, Campus Life, News) now point to real routes. Logo links to "/". Portal button → /portal. Apply Now → /apply. Mega menu links updated to real pages. Mobile drawer links updated.
-- Updated Footer: all 3 columns (Admissions, Departments, Quick Links) now link to real pages. Privacy/Terms/Accessibility → /contact-us. Brand logo clickable → "/".
-- Updated HeroClient: Apply Now → /apply, Watch Campus Tour opens CampusTourModal
-- Updated FinalCTAClient: Apply Now → /apply, Download Prospectus → /api/brochure (opens in new tab)
-- Updated QuickActions: all 6 cards now functional (Apply Online → /apply, Download Brochure → /api/brochure, Fee Structure → /fees, Student Portal → /portal, Virtual Tour → modal, Course Finder → /#courses)
+- Extended Prisma schema with 17 new models: Student, Semester, Unit, Enrollment, Assessment, Submission, Attendance, Result, Fee, Payment, ExamCard, LibraryBook, BookLoan, Hostel, HostelAllocation, Announcement, Notification, Message — all with relations, indexes, and unique constraints
+- Wrote comprehensive student seeder (prisma/seed-students.ts): 3 demo students with full academic data
+  • student@northgate.ac.ke / Student@2026 (Engineering, GPA 3.65, 92% attendance)
+  • mary.student@northgate.ac.ke / Student@2026 (ICT, GPA 3.85, 96% attendance)
+  • brian.student@northgate.ac.ke / Student@2026 (Business, GPA 3.20, 85% attendance)
+  • Each student gets: 4-5 enrolled units, 2 assessments per unit (1 graded + 1 pending), POE requests, 30 days of attendance records, 3 fee items (tuition/lab/hostel) with 1 partial payment, past + current semester results, exam card, 5 notifications, hostel allocation, welcome message
+  • Plus: 8 library books, 5 announcements, current + previous semester
+- Updated middleware to protect both /admin/* and /student/* routes with role-based access (STUDENT role for /student, ADMIN/EDITOR for /admin)
+- Built getCurrentStudent() helper that joins User → Student → Programme
+- Built 8 student API routes: /api/student/{stats, units, assessments, attendance, results, fees, payments, exam-card, library, hostel, notifications, messages, announcements, profile}
+- Built StudentPortalShell: floating glass sidebar with 22 nav items in 6 groups (Overview, Academics, Finance, Resources, Communication, Account), collapsible to icon-only on desktop, slide-out drawer on mobile. Topbar with: search trigger, theme toggle, notifications dropdown (live unread count), user avatar menu, breadcrumb
+- Built Command Palette (Ctrl+K / Cmd+K): fuzzy search across all 22 portal pages, grouped by category, keyboard navigation (↑↓ to navigate, Enter to select, ESC to close), auto-focus
+- Built /student/login: Liquid Glass split-screen with feature cards (Grades/E-Learning/Fees/Timetable) on left, login form on right, demo credentials displayed
+- Built /student/dashboard (showpiece):
+  • Welcome hero with student avatar, name, programme, 3 hero stats (GPA, Attendance, Progress)
+  • 14 animated glass stat cards: Registered Units, Pending Assessments, POE Requests, POE Submissions, Attendance, Fee Balance, Fee Statement, Exam Card, Active Loans, Announcements, Notifications, Results, Library, Hostel
+  • GPA Trend bar chart (across semesters)
+  • Attendance by Unit progress bars (color-coded by rate)
+  • Upcoming Deadlines list (with days-left badges, color-coded by urgency)
+  • 16 Quick Action tiles (Register Units, Timetable, Exam Card, Results, Assessments, POE, Attendance, Library, Fee Statement, Payment, Student ID, Calendar, Downloads, Support, Profile)
+- Built all 22 sub-pages with real DB data:
+  • /student/my-units: enrolled units with instructor, credits, assessment counts
+  • /student/assessments: filterable list (ALL/PENDING/SUBMITTED/GRADED), submit button posts to API
+  • /student/assignments: filtered to ASSIGNMENT type
+  • /student/poe-requests: filtered to POE_REQUEST type
+  • /student/poe-submissions: filtered to POE_SUBMISSION type
+  • /student/attendance: donut chart for overall rate, 4 stat cards (Present/Late/Absent/Excused), by-unit progress bars, recent sessions table
+  • /student/results: GPA trend chart, per-semester breakdown tables with grades color-coded
+  • /student/exam-card: printable exam card with student photo, units table, registrar signature, Print/Save PDF button
+  • /student/finance: hero balance card, 4 stat cards, fee items table with paid/balance/status
+  • /student/fee-statements: reuses FinanceClient
+  • /student/payments: payment methods cards (M-Pesa/Card/Bank), payment history table
+  • /student/library: searchable book catalogue with covers, my active loans with due dates
+  • /student/downloads: 8 downloadable documents (calendar, handbook, exam timetable, fee structure, brochures, forms)
+  • /student/hostel: allocation card with room number, hostel stats, rules, quick actions
+  • /student/student-id: 3D-flip digital ID card with photo, programme, QR code placeholder, Print button
+  • /student/notifications: tabbed (My Notifications / Announcements), mark-all-read, mark individual read
+  • /student/messages: tabbed (Inbox / Sent / Compose), compose form posts to API
+  • /student/calendar: mini calendar with event dots, upcoming items list
+  • /student/support: 3 contact channels (Email/Phone/Chat), 4 resource cards, CTA to messages
+  • /student/profile: profile header with completeness donut, read-only info grid, editable form (PATCH to API)
+  • /student/settings: appearance (theme toggle), notifications (4 toggles), language, security (password/2FA stubs), sign out
+- Added 5-click logo Easter egg: clicking the homepage logo 5 times within 1.5 seconds redirects to /admin/login (quick admin access)
+- Updated /portal page to redirect to /student/dashboard after student login
 
 Stage Summary:
 - Lint: clean
 - Agent Browser verified end-to-end:
-  • AnimatedCounter in Success Stories now shows real values (96%, 18500+, 80+, 42%)
-  • Programme detail page renders with full info + related programmes
-  • News article page renders with content body + related stories
-  • Department detail page renders with programme list
-  • Campus Tour modal opens with 6 tour stops + navigation
-  • Brochure generator (/api/brochure) produces full PDF prospectus with all programmes
-  • Contact form submits → success state → message persisted to DB (verified)
-  • News category filter works (Research button shows only Research articles)
-  • Portal page renders with login form + feature cards
-  • Fees page renders with payment methods + searchable fees table + FAQ
-  • About page renders with stats + mission + timeline (after motion.div fix)
-- Every link, button, and CTA on the homepage now does something real
-- All public-facing flows tested: homepage → programme detail → apply, homepage → news article, homepage → contact form → DB, homepage → brochure PDF, homepage → campus tour modal, homepage → fees table, homepage → portal login
+  • Student login page renders with glass card + demo credentials
+  • Login with student@northgate.ac.ke / Student@2026 succeeds → redirects to /student/dashboard
+  • Dashboard renders with welcome hero (Alex Mwangi, GPA 3.65, 92% attendance), 14 stat cards, GPA trend chart, attendance chart, upcoming deadlines, 16 quick actions
+  • Command Palette (Ctrl+K) opens with searchable page list
+  • /student/results shows GPA trend + semester results table with grades
+  • /student/exam-card shows printable exam card with student photo + units
+  • /student/attendance shows donut chart + by-unit breakdown
+  • 5-click homepage logo → redirects to /admin/login
+- All data is real (persisted in SQLite via Prisma), no mock data, no placeholder logic
+- Every button/form connects to backend API routes that read/write the database

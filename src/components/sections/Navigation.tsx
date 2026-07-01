@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -78,6 +79,24 @@ export function Navigation() {
   const [megaOpen, setMegaOpen] = React.useState<string | null>(null);
   const [searchOpen, setSearchOpen] = React.useState(false);
   const { theme, toggleTheme } = useTheme();
+  const router = useRouter();
+  const logoClicks = React.useRef<{ count: number; lastAt: number }>({ count: 0, lastAt: 0 });
+
+  const onLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const now = Date.now();
+    if (now - logoClicks.current.lastAt > 1500) {
+      logoClicks.current.count = 0;
+    }
+    logoClicks.current.count += 1;
+    logoClicks.current.lastAt = now;
+    if (logoClicks.current.count >= 5) {
+      logoClicks.current.count = 0;
+      router.push("/admin/login");
+      return;
+    }
+    router.push("/");
+  };
 
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 32);
@@ -108,7 +127,7 @@ export function Navigation() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className={`flex items-center justify-between transition-all duration-300 ${scrolled ? "h-16" : "h-20"}`}>
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 group">
+            <Link href="/" onClick={onLogoClick} className="flex items-center gap-3 group">
               <div className="relative h-10 w-10 rounded-xl gradient-royal grid place-items-center shadow-soft group-hover:scale-105 transition-transform">
                 <span className="font-display font-bold text-white text-lg">N</span>
                 <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full gradient-gold ring-2 ring-background" />
