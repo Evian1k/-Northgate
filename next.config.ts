@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
-  allowedDevOrigins: ["*.space-z.ai", "*.chatglm.cn"],
+  allowedDevOrigins: ["*.vercel.app", "*.localhost"],
 };
 
 export default nextConfig;

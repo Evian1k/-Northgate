@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Sora, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
+import { QueryProvider } from "@/components/QueryProvider";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -74,8 +75,10 @@ export default function RootLayout({
         className={`${jakarta.variable} ${sora.variable} ${jetbrains.variable} font-sans antialiased bg-background text-foreground`}
       >
         <ThemeProvider>
-          {children}
-          <Toaster />
+          <QueryProvider>
+            {children}
+            <Toaster />
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

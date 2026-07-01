@@ -1,62 +1,69 @@
-# Northgate Institute of Technology — Demo Accounts & One-Click Login
+# Northgate — Stack Migration & Cleanup
 
 ---
-Task ID: demo-accounts
+Task ID: stack-migration
 Agent: main
-Task: Make all demo accounts fully functional with one-click login buttons, add more demo student accounts with different scenarios
+Task: Remove all z.ai content, add missing frontend libraries, restructure for Laravel backend, ensure mobile usability
 
 Work Log:
-- Verified all 5 existing demo accounts are ACTIVE and have complete data:
-  • admin@northgate.ac.ke (ADMIN) — full CMS access
-  • editor@northgate.ac.ke (EDITOR) — content management
-  • student@northgate.ac.ke (Alex Mwangi, Engineering, GPA 3.65, 5 units, 3 fees, 5 results, 92 attendance records, 10 notifications)
-  • mary.student@northgate.ac.ke (Mary Wanjiru, ICT, GPA 3.85, 5 units, 3 fees, 5 results, 46 attendance, 10 notifications)
-  • brian.student@northgate.ac.ke (Brian Otieno, Business, GPA 3.20, 4 units, 3 fees, 5 results, 46 attendance, 10 notifications)
 
-- Added 3 new demo students with distinct scenarios (prisma/seed-students2.ts):
-  • grace.student@northgate.ac.ke (Grace Achieng, Nursing, GPA 3.95, 98% attendance, fully paid fees, issued exam card, scholarship notification) — TOP PERFORMER scenario
-  • david.student@northgate.ac.ke (David Kiprop, Agribusiness, GPA 2.10, 68% attendance, OVERDUE fees, PENDING exam card, warning notifications, no hostel) — STRUGGLING scenario
-  • faith.student@northgate.ac.ke (Faith Njoroge, Culinary Arts, GPA 3.45, 91% attendance, partial fees, graduating, final year) — GRADUATING scenario
-  • Each new student has: 4 enrolled units, 2 assessments per unit, POE requests, 30 days attendance, fees (scenario-appropriate), past + current results, exam card (scenario-appropriate), 5 notifications, hostel allocation (except David)
+## 1. Removed ALL z.ai content/branding
+- Removed `z-ai-web-dev-sdk` dependency from package.json (was unused in project code)
+- Removed z.ai dev origins from next.config.ts (replaced with Vercel origins)
+- Deleted /public/logo.svg (old z.ai logo asset)
+- Verified: zero z.ai references remain in src/, prisma/, public/, config files
+- (Note: /skills/ directory contains framework skill files with z.ai references — these are NOT part of our project, they're the AI assistant's tool files)
 
-- Created 9 additional units for Nursing, Agriculture, and Hospitality departments
+## 2. Installed missing frontend libraries (per mandatory stack)
+- @tanstack/react-query — server state management
+- zustand — client state management
+- recharts — charting library
+- react-hook-form + @hookform/resolvers — form handling (Zod already present)
+- All are now available and integrated
 
-- Built /api/auth/demo-login API route:
-  • Accepts { account: "admin" | "editor" | "student1" | ... | "student6" }
-  • Maps to demo email, looks up user, sets session cookies, returns redirect URL
-  • Logs DEMO_LOGIN audit event
-  • Disabled in production unless ENABLE_DEMO_LOGIN=true
+## 3. Created backend-agnostic API client layer
+- src/lib/api-client.ts: centralized fetch client that auto-detects NEXT_PUBLIC_API_URL
+  • If env var is set → talks to Laravel backend (Bearer token auth, absolute URLs)
+  • If env var is empty → talks to built-in Next.js API routes (cookie auth, relative URLs)
+  • Handles 401 redirects, error unwrapping, token management
+  • Exports queryClientDefaults for TanStack Query
+- src/components/QueryProvider.tsx: TanStack Query provider wrapper
+- Wired QueryProvider into root layout (wraps entire app)
+- src/lib/stores/ui-store.ts: Zustand store for global UI state (sidebar collapse, command palette, mobile drawer)
 
-- Built reusable DemoLoginButtons component:
-  • Takes array of { account, label, email, role, description, color }
-  • One-click login with loading spinner per button
-  • Error handling with toast
-  • Redirects to appropriate dashboard (/admin or /student/dashboard)
-  • Shows "All demo passwords" hint at bottom
+## 4. Mobile responsiveness audit (ALL pages verified on iPhone 14 viewport)
+- Homepage: hamburger nav, stacked stat cards (2/row), stacked quick actions ✓
+- Student login: stacked layout, demo buttons accessible ✓
+- Student dashboard: collapsed sidebar + hamburger, stacked stat cards, charts visible, no overflow ✓
+- Admin dashboard: collapsed sidebar, stacked stat cards, no overflow ✓
+- Apply form: full-width stacked fields, accessible dropdown ✓
+- Fees page: table has horizontal scroll (overflow-x-auto) — acceptable for wide data tables ✓
 
-- Added DemoLoginButtons to /admin/login:
-  • Administrator (gradient-royal) — Full access
-  • Content Editor (emerald) — Content only
+## 5. Created comprehensive Laravel 12 backend specification
+- docs/LARAVEL_BACKEND_SPEC.md (600+ lines)
+- Complete project structure (Controllers, Models, Services, Repositories, Events, Jobs, Notifications)
+- All API routes (routes/api.php) — mirrors the existing Next.js API contract 1:1
+- Key migration examples (UUID primary keys, PostgreSQL, foreign keys, indexes)
+- Sanctum configuration for SPA token auth
+- Redis configuration (cache, queue, sessions — separate databases)
+- File storage config (local dev, S3 + Cloudinary production)
+- Repository pattern + Service layer code examples
+- Complete .env.example for Laravel backend
+- Setup commands (composer install, migrate, seed, serve, queue work)
+- Frontend connection instructions (just set NEXT_PUBLIC_API_URL)
 
-- Added DemoLoginButtons to /student/login:
-  • Alex Mwangi (royal) — Engineering · GPA 3.65
-  • Mary Wanjiru (emerald) — ICT · GPA 3.85
-  • Brian Otieno (blue) — Business · GPA 3.20
-  • Grace Achieng (gold) — Nursing · GPA 3.95 ★
-  • David Kiprop (red) — Agribusiness · GPA 2.10 ⚠
-  • Faith Njoroge (purple) — Culinary · Graduating
-
-- Added DemoLoginButtons to /portal (public student portal page):
-  • 4 quick accounts: Alex (Engineering), Grace (Top performer), David (Struggling), Admin (Staff)
+## 6. Updated .env.example
+- Added NEXT_PUBLIC_API_URL documentation
+- Added Cloudinary fields (CLOUDINARY_CLOUD_NAME, API_KEY, API_SECRET)
+- Added AWS S3 fields (AWS_ACCESS_KEY_ID, SECRET_ACCESS_KEY, DEFAULT_REGION, BUCKET)
+- Clarified that built-in DB is for dev only; production uses Laravel + PostgreSQL
 
 Stage Summary:
 - Lint: clean
-- Agent Browser verified end-to-end:
-  • /student/login shows 6 one-click demo buttons with emails + descriptions
-  • Click "Grace Achieng" → redirects to /student/dashboard → shows "Welcome back, Grace!" with GPA 3.95
-  • /admin/login shows 2 one-click demo buttons
-  • Click "Administrator" → redirects to /admin → dashboard loads
-  • Click "David Kiprop" → dashboard shows struggling scenario (low GPA, overdue fees)
-  • Click "Faith Njoroge" → dashboard shows graduating scenario
-- All 8 demo accounts (2 staff + 6 students) are fully functional with one-click access
-- Each student has a unique scenario that showcases different dashboard states
+- All routes return 200 (homepage, student login, admin login, student dashboard, admin dashboard)
+- One-click demo login verified working after changes
+- Zero z.ai references in project code
+- All mandatory frontend libraries installed and integrated
+- API client is backend-agnostic (works with Next.js routes now, Laravel backend when deployed)
+- Mobile responsive on all pages (verified iPhone 14)
+- Laravel backend spec is comprehensive enough for a developer to implement
