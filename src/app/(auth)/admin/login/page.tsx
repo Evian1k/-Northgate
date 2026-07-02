@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -10,6 +11,22 @@ import { Input } from "@/components/ui/input";
 import { DemoLoginButtons } from "@/components/DemoLoginButtons";
 
 export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={<LoginFallback />}>
+      <AdminLoginInner />
+    </Suspense>
+  );
+}
+
+function LoginFallback() {
+  return (
+    <div className="min-h-screen grid place-items-center bg-gradient-to-br from-navy via-royal-deep to-navy">
+      <div className="h-10 w-10 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+    </div>
+  );
+}
+
+function AdminLoginInner() {
   const router = useRouter();
   const params = useSearchParams();
   const redirect = params.get("redirect") || "/admin";
