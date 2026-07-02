@@ -2,9 +2,10 @@
  * Student session helpers — get current student profile.
  */
 import { getCurrentUser } from "@/lib/session";
-import { db } from "@/lib/db";
+import { db, ensureSeeded } from "@/lib/db";
 
 export async function getCurrentStudent() {
+  await ensureSeeded();
   const user = await getCurrentUser();
   if (!user) return null;
   if (user.role !== "STUDENT" && user.role !== "ADMIN") return null;

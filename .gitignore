@@ -30,8 +30,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files — .env is committed with safe demo defaults for zero-config deploy
+# .env.local and .env.production should NOT be committed
+.env.local
+.env.production
+.env.*.local
 
 # vercel
 .vercel

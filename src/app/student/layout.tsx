@@ -1,11 +1,12 @@
 import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
+import { db, ensureSeeded } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { StudentPortalShell } from "@/components/student/StudentPortalShell";
 
 export const dynamic = "force-dynamic";
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
+  await ensureSeeded();
   const user = await getCurrentUser();
   if (!user) redirect("/student/login");
   if (user.role !== "STUDENT" && user.role !== "ADMIN") redirect("/student/login?error=forbidden");
