@@ -33,16 +33,20 @@ export async function setSessionCookies(userId: string, email: string, role: str
   const refreshJti = randomToken();
   const refresh = await signRefreshToken({ sub: userId, jti: refreshJti });
 
-  // Persist refresh token in DB for revocation tracking
-  await db.refreshToken.create({
-    data: {
-      userId,
-      token: refreshJti,
-      expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL * 1000),
-      ip: opts?.ip,
-      userAgent: opts?.userAgent,
-    },
-  });
+  // Persist refresh token in DB for revocation tracking (non-fatal if DB unavailable)
+  try {
+    await db.refreshToken.create({
+      data: {
+        userId,
+        token: refreshJti,
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL * 1000),
+        ip: opts?.ip,
+        userAgent: opts?.userAgent,
+      },
+    });
+  } catch {
+    // DB not available — session still works, just can't be revoked server-side
+  }
 
   const jar = await cookies();
   jar.set(ACCESS_COOKIE, access, cookieOptions(ACCESS_TOKEN_TTL));
@@ -67,21 +71,41 @@ export async function getAccessToken(): Promise<AccessTokenPayload | null> {
 export async function getCurrentUser() {
   const payload = await getAccessToken();
   if (!payload) return null;
-  await ensureSeeded();
-  const user = await db.user.findFirst({
-    where: { id: payload.sub, deletedAt: null, status: "ACTIVE" },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      status: true,
-      image: true,
-      emailVerifiedAt: true,
-      twoFactorEnabled: true,
-    },
-  });
-  return user;
+
+  // Demo users (IDs start with "demo-") — bypass DB lookup
+  if (payload.sub.startsWith("demo-")) {
+    return {
+      id: payload.sub,
+      email: payload.email,
+      name: payload.name,
+      role: payload.role,
+      status: "ACTIVE",
+      image: null,
+      emailVerifiedAt: new Date(),
+      twoFactorEnabled: false,
+    };
+  }
+
+  // Real users — lookup in DB (non-fatal if DB unavailable)
+  try {
+    await ensureSeeded();
+    const user = await db.user.findFirst({
+      where: { id: payload.sub, deletedAt: null, status: "ACTIVE" },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        status: true,
+        image: true,
+        emailVerifiedAt: true,
+        twoFactorEnabled: true,
+      },
+    });
+    return user;
+  } catch {
+    return null;
+  }
 }
 
 export async function requireAuth() {
