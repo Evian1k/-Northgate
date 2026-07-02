@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { db } from "@/lib/db";
+import { db, ensureSeeded } from "@/lib/db";
 import { ArrowRight, Award, Users, Building2, Globe2 } from "lucide-react";
 import { Reveal, SectionHeading, StaggerGroup } from "@/components/anim";
 
 export const dynamic = "force-dynamic";
 
 export default async function AboutPage() {
+  await ensureSeeded();
   const settings = await db.siteSetting.findMany();
   const s: Record<string, string> = {};
   for (const setting of settings) s[setting.key] = setting.value;

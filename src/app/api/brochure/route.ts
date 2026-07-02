@@ -3,12 +3,13 @@
  * Generates a downloadable PDF prospectus using HTML print approach.
  * Returns HTML that auto-opens the browser's print dialog (user selects "Save as PDF").
  */
-import { db } from "@/lib/db";
+import { db, ensureSeeded } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  await ensureSeeded();
   const [settings, departments, programmes] = await Promise.all([
     db.siteSetting.findMany(),
     db.department.findMany({

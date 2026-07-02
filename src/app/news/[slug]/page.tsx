@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { db } from "@/lib/db";
+import { db, ensureSeeded } from "@/lib/db";
 import { getPublishedNews } from "@/lib/data";
 import { parseJsonArray } from "@/lib/data";
 import { NewsDetailClient } from "./NewsDetailClient";
@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function NewsDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  await ensureSeeded();
   const article = await db.news.findFirst({
     where: { slug, deletedAt: null, status: "PUBLISHED", publishedAt: { lte: new Date() } },
     include: { author: { select: { name: true } } },

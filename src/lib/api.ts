@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { ZodSchema, ZodError } from "zod";
 import { getCurrentUser, getRequestIp } from "@/lib/session";
 import { audit } from "@/lib/audit";
+import { ensureSeeded } from "@/lib/db";
 
 export interface ApiContext {
   user: Awaited<ReturnType<typeof getCurrentUser>>;
@@ -74,6 +75,9 @@ export function apiHandler(
 ) {
   return async (req: Request, routeCtx?: { params?: Record<string, string> }) => {
     try {
+      // Ensure DB schema + demo data exist (zero-config deploy)
+      await ensureSeeded();
+
       let user = await getCurrentUser();
       const ip = await getRequestIp(req);
       const userAgent = req.headers.get("user-agent") || undefined;

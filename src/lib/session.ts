@@ -3,7 +3,7 @@
  * Uses httpOnly cookies for both access & refresh tokens.
  */
 import { cookies } from "next/headers";
-import { db } from "@/lib/db";
+import { db, ensureSeeded } from "@/lib/db";
 import {
   signAccessToken,
   signRefreshToken,
@@ -67,6 +67,7 @@ export async function getAccessToken(): Promise<AccessTokenPayload | null> {
 export async function getCurrentUser() {
   const payload = await getAccessToken();
   if (!payload) return null;
+  await ensureSeeded();
   const user = await db.user.findFirst({
     where: { id: payload.sub, deletedAt: null, status: "ACTIVE" },
     select: {

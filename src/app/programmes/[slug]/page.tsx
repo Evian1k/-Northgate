@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { db } from "@/lib/db";
+import { db, ensureSeeded } from "@/lib/db";
 import { getPublishedProgrammes } from "@/lib/data";
 import { parseJsonArray } from "@/lib/data";
 import { ProgrammeDetailClient } from "./ProgrammeDetailClient";
@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ProgrammeDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  await ensureSeeded();
   const programme = await db.programme.findFirst({
     where: { slug, deletedAt: null, status: "PUBLISHED" },
     include: { department: true },
