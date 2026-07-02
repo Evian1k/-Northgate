@@ -52,3 +52,27 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Database files (SQLite dev database — do not commit)
+/db/
+
+# Sandbox scripts (environment-specific, not part of project)
+/.zscripts/
+
+# Download/screenshots directory (generated assets)
+/download/
+
+# Upload directory
+/upload/
+
+# Examples (sandbox-specific)
+/examples/
+
+# Mini-services (sandbox-specific)
+/mini-services/
+
+# Caddyfile (sandbox-specific reverse proxy config)
+Caddyfile
+
+# Bun lockfile (optional — uncomment to ignore)
+# bun.lock
