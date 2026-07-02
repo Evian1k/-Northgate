@@ -1,41 +1,22 @@
 /**
  * POST /api/auth/logout
- * Revokes the current refresh token and clears cookies.
+ * Clears session cookies. No DB needed.
  */
-import { db } from "@/lib/db";
-import { clearSessionCookies, getAccessToken } from "@/lib/session";
-import { verifyRefreshToken } from "@/lib/jwt";
-import { apiHandler, ok } from "@/lib/api";
+export const runtime = "nodejs";
+
+import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { audit } from "@/lib/audit";
 
-export const POST = apiHandler(async (req, ctx) => {
-  const payload = await getAccessToken();
-  const jar = await cookies();
-  const refresh = jar.get("ng_refresh")?.value;
-
-  if (refresh) {
-    const rt = await verifyRefreshToken(refresh);
-    if (rt) {
-      await db.refreshToken.updateMany({
-        where: { token: rt.jti, userId: rt.sub },
-        data: { revokedAt: new Date() },
-      });
-    }
+export async function POST() {
+  try {
+    const jar = await cookies();
+    jar.delete("ng_access");
+    jar.delete("ng_refresh");
+    return NextResponse.json({ success: true });
+  } catch (e: any) {
+    return NextResponse.json(
+      { success: false, error: e?.message || "Logout failed" },
+      { status: 500 }
+    );
   }
-
-  await clearSessionCookies();
-
-  if (payload) {
-    await audit({
-      userId: payload.sub,
-      action: "LOGOUT",
-      resource: "User",
-      resourceId: payload.sub,
-      ip: ctx.ip,
-      userAgent: ctx.userAgent,
-    });
-  }
-
-  return ok({ success: true });
-});
+}

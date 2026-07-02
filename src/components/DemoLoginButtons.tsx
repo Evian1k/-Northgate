@@ -6,8 +6,8 @@ import { motion } from "framer-motion";
 import { Loader2, Zap, type LucideIcon } from "lucide-react";
 
 export interface DemoAccount {
-  account: string;        // key sent to API
-  label: string;          // display label
+  account: string;
+  label: string;
   email: string;
   role: string;
   description?: string;
@@ -17,16 +17,14 @@ export interface DemoAccount {
 
 export function DemoLoginButtons({
   accounts,
-  redirectOnSuccess = true,
 }: {
   accounts: DemoAccount[];
-  redirectOnSuccess?: boolean;
 }) {
   const router = useRouter();
   const [loading, setLoading] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
-  const login = async (account: string, redirectTo: string) => {
+  const login = async (account: string, role: string) => {
     setLoading(account);
     setError(null);
     try {
@@ -35,20 +33,24 @@ export function DemoLoginButtons({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ account }),
       });
+
       const data = await res.json();
-      if (res.ok) {
-        // API returns { success, data: { user, redirectTo } } — unwrap
-        const redirect = data?.data?.redirectTo || data?.redirectTo || redirectTo;
-        if (redirectOnSuccess) {
-          router.push(redirect);
-          router.refresh();
-        }
+
+      if (res.ok && data.success !== false) {
+        // Get redirect from data.data.redirectTo or data.redirectTo
+        const redirect =
+          data?.data?.redirectTo ||
+          data?.redirectTo ||
+          (role === "STUDENT" ? "/student/dashboard" : "/admin");
+
+        // Use window.location for a hard navigation (more reliable than router.push)
+        setTimeout(() => { window.location.href = redirect; }, 100);
       } else {
-        setError(data?.error || data?.data?.error || "Login failed");
+        setError(data?.error || data?.data?.error || `Login failed (HTTP ${res.status})`);
+        setLoading(null);
       }
-    } catch {
-      setError("Network error. Please try again.");
-    } finally {
+    } catch (e: any) {
+      setError(e?.message || "Network error. Please try again.");
       setLoading(null);
     }
   };
@@ -73,17 +75,17 @@ export function DemoLoginButtons({
           return (
             <motion.button
               key={acc.account}
-              onClick={() => login(acc.account, acc.role === "STUDENT" ? "/student/dashboard" : "/admin")}
+              onClick={() => login(acc.account, acc.role)}
               disabled={loading !== null}
               whileHover={{ scale: loading === null ? 1.01 : 1 }}
               whileTap={{ scale: 0.99 }}
               className="group w-full flex items-center gap-3 rounded-xl bg-card border border-border px-3 py-2.5 text-left hover:border-royal/40 hover:shadow-soft transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <div className={`grid place-items-center h-8 w-8 rounded-lg flex-shrink-0 ${acc.color || "bg-royal/10"}`}>
-                {acc.icon ? (
-                  <acc.icon className={`h-4 w-4 ${acc.color ? "text-white" : "text-royal"}`} />
-                ) : isLoading ? (
+                {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin text-royal" />
+                ) : acc.icon ? (
+                  <acc.icon className={`h-4 w-4 ${acc.color ? "text-white" : "text-royal"}`} />
                 ) : (
                   <span className="text-xs font-bold text-royal">
                     {acc.email[0].toUpperCase()}
@@ -103,9 +105,6 @@ export function DemoLoginButtons({
           );
         })}
       </div>
-      <p className="text-[10px] text-muted-foreground mt-2 text-center">
-        All demo passwords: <code className="font-mono">Student@2026</code> or <code className="font-mono">Admin@2026</code>
-      </p>
     </div>
   );
 }
