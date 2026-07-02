@@ -37,12 +37,14 @@ export function DemoLoginButtons({
       });
       const data = await res.json();
       if (res.ok) {
+        // API returns { success, data: { user, redirectTo } } — unwrap
+        const redirect = data?.data?.redirectTo || data?.redirectTo || redirectTo;
         if (redirectOnSuccess) {
-          router.push(data.redirectTo || redirectTo);
+          router.push(redirect);
           router.refresh();
         }
       } else {
-        setError(data.error || "Login failed");
+        setError(data?.error || data?.data?.error || "Login failed");
       }
     } catch {
       setError("Network error. Please try again.");

@@ -33,16 +33,17 @@ export const POST = apiHandler(async (req, ctx) => {
   const email = demoAccounts[account];
   if (!email) return fail("Invalid demo account", 400);
 
-  // Only allow in development or if explicitly enabled
-  if (process.env.NODE_ENV === "production" && process.env.ENABLE_DEMO_LOGIN !== "true") {
-    return fail("Demo login is disabled in production", 403);
+  // Demo login is always enabled for this project (client demo)
+  // To disable in a real production deployment, set ENABLE_DEMO_LOGIN=false
+  if (process.env.ENABLE_DEMO_LOGIN === "false") {
+    return fail("Demo login is disabled", 403);
   }
 
   const user = await db.user.findFirst({
     where: { emailNormalized: email, deletedAt: null, status: "ACTIVE" },
   });
 
-  if (!user) return fail("Demo account not found. Run the seed script.", 404);
+  if (!user) return fail("Demo account not found. The database may still be initializing — please try again in a moment.", 404);
 
   await db.user.update({
     where: { id: user.id },
